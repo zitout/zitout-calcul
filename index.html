@@ -108,6 +108,7 @@
             const amount = parseFloat(document.getElementById('amount').value);
             let monthlyRate = 0;
             let additionalFee = 0;
+            let totalSum = 0;
 
             // تحديد النسبة الشهرية بناءً على عدد الأشهر
             switch(months) {
@@ -168,72 +169,47 @@
             }
 
             if (type === 'product') {
-                // حساب الرسوم الإضافية بناءً على المبلغ
-                switch(true) {
-                    case (amount >= 0 && amount <= 999):
-                        additionalFee = 20;
-                        break;
-                    case (amount >= 1000 && amount <= 1999):
-                        additionalFee = 30;
-                        break;
-                    case (amount >= 2000 && amount <= 2999):
-                        additionalFee = 50;
-                        break;
-                    case (amount >= 3000 && amount <= 3999):
-                        additionalFee = 70;
-                        break;
-                    case (amount >= 4000 && amount <= 4999):
-                        additionalFee = 90;
-                        break;
-                    case (amount >= 5000 && amount <= 5999):
-                        additionalFee = 110;
-                        break;
-                    case (amount >= 6000 && amount <= 6999):
-                        additionalFee = 140;
-                        break;
-                    case (amount >= 7000 && amount <= 7999):
-                        additionalFee = 170;
-                        break;
-                    case (amount >= 8000 && amount <= 8999):
-                        additionalFee = 210;
-                        break;
-                    case (amount >= 9000 && amount <= 9999):
-                        additionalFee = 250;
-                        break;
-                    case (amount >= 10000):
-                        additionalFee = 300;
-                        break;
-                    default:
-                        additionalFee = 0;
-                }
-            }
-
-            // إزالة تطبيق الخصومات على معدل الفائدة الشهري للنوع "سلعة"
-            /*
-            if (type !== 'product') {
-                if (amount >= 10000 && amount < 20000) {
-                    monthlyRate *= 0.9;
-                } else if (amount >= 20000) {
-                    monthlyRate *= 0.8;
-                }
-            }
-            */
-
-            // حساب المجموع النهائي والقسط الشهري
-            let totalSum;
-            if (type === 'product') {
-                totalSum = (amount + additionalFee) * (1 + monthlyRate);
+                // حساب الرسوم الإضافية للسلع
+                additionalFee = calculateAdditionalFee(amount);
+                
+                // إضافة الرسوم الإضافية للمبلغ الأصلي
+                totalSum = amount + additionalFee;
+                
+                // تطبيق النسبة الشهرية
+                totalSum *= (1 + monthlyRate);
             } else { // عمرة
-                // إذا كنت ترغب في تطبيق خصومات على أنواع أخرى مثل "عمرة"، يمكنك إضافة ذلك هنا
                 totalSum = amount * (1 + monthlyRate);
             }
 
+            // تطبيق الخصومات على المبلغ النهائي بناءً على المبلغ الأصلي
+            if (amount >= 10000 && amount < 20000) {
+                totalSum *= 0.9;
+            } else if (amount >= 20000) {
+                totalSum *= 0.8;
+            }
+
+            // تقريب القسط الشهري لأقرب 10 للأعلى
             const monthlyPayment = Math.ceil(totalSum / months / 10) * 10;
 
             document.getElementById('result').innerHTML = `
                 <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)}<br>
                 <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)}
             `;
+        }
+
+        function calculateAdditionalFee(amount) {
+            if (amount >= 0 && amount <= 999) return 20;
+            if (amount >= 1000 && amount <= 1999) return 30;
+            if (amount >= 2000 && amount <= 2999) return 50;
+            if (amount >= 3000 && amount <= 3999) return 70;
+            if (amount >= 4000 && amount <= 4999) return 90;
+            if (amount >= 5000 && amount <= 5999) return 110;
+            if (amount >= 6000 && amount <= 6999) return 140;
+            if (amount >= 7000 && amount <= 7999) return 170;
+            if (amount >= 8000 && amount <= 8999) return 210;
+            if (amount >= 9000 && amount <= 9999) return 250;
+            if (amount >= 10000) return 300;
+            return 0;
         }
     </script>
 </body>
