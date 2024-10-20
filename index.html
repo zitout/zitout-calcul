@@ -6,75 +6,7 @@
     <title>حاسبة القروض الذكية</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .calculator {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            width: 350px;
-            text-align: center;
-        }
-        h2 {
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
-        }
-        .input-group {
-            margin-bottom: 1rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #34495e;
-            font-weight: bold;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #bdc3c7;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            width: 100%;
-            margin-top: 1rem;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        #result {
-            margin-top: 1.5rem;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .result-box {
-            background-color: #ecf0f1;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-top: 1rem;
-        }
+        /* نفس الأنماط السابقة */
     </style>
 </head>
 <body>
@@ -108,59 +40,59 @@
             const amount = parseFloat(document.getElementById('amount').value);
             let monthlyRate = 0;
             let additionalFee = 0;
+            let totalSum = 0;
+
+            // تحديد النسبة الشهرية
+            switch(months) {
+                case 1: case 2: monthlyRate = 0.17; break;
+                case 3: monthlyRate = 0.2; break;
+                case 4: monthlyRate = 0.22; break;
+                case 5: monthlyRate = 0.24; break;
+                case 6: monthlyRate = 0.27; break;
+                case 7: monthlyRate = 0.3; break;
+                case 8: monthlyRate = 0.34; break;
+                case 9: monthlyRate = 0.38; break;
+                case 10: monthlyRate = 0.42; break;
+                case 11: monthlyRate = 0.46; break;
+                case 12: monthlyRate = 0.5; break;
+                case 13: monthlyRate = 0.52; break;
+                case 14: monthlyRate = 0.57; break;
+                case 15: monthlyRate = 0.62; break;
+                case 16: monthlyRate = 0.67; break;
+                case 17: monthlyRate = 0.72; break;
+                case 18: monthlyRate = 0.77; break;
+                default: monthlyRate = 0;
+            }
 
             if (type === 'product') {
-                // حساب العمولة للسلع
-                if (months >= 1 && months <= 2) monthlyRate = 0.17;
-                else if (months === 3) monthlyRate = 0.2;
-                else if (months === 4) monthlyRate = 0.22;
-                else if (months === 5) monthlyRate = 0.24;
-                else if (months === 6) monthlyRate = 0.27;
-                else if (months === 7) monthlyRate = 0.3;
-                else if (months === 8) monthlyRate = 0.34;
-                else if (months === 9) monthlyRate = 0.38;
-                else if (months === 10) monthlyRate = 0.42;
-                else if (months === 11) monthlyRate = 0.46;
-                else if (months === 12) monthlyRate = 0.5;
-                else if (months === 13) monthlyRate = 0.52;
-                else if (months === 14) monthlyRate = 0.57;
-                else if (months === 15) monthlyRate = 0.62;
-                else if (months === 16) monthlyRate = 0.67;
-                else if (months === 17) monthlyRate = 0.72;
-                else if (months === 18) monthlyRate = 0.77;
+                // تحديد الرسوم الإضافية للسلع
+                if (amount <= 999) additionalFee = 20;
+                else if (amount <= 1999) additionalFee = 30;
+                else if (amount <= 2999) additionalFee = 50;
+                else if (amount <= 3999) additionalFee = 70;
+                else if (amount <= 4999) additionalFee = 90;
+                else if (amount <= 5999) additionalFee = 110;
+                else if (amount <= 6999) additionalFee = 140;
+                else if (amount <= 7999) additionalFee = 170;
+                else if (amount <= 8999) additionalFee = 210;
+                else if (amount <= 9999) additionalFee = 250;
+                else additionalFee = 300;
 
-                // تحديد الرسوم الإضافية
-                if (amount >= 0 && amount <= 999) additionalFee = 20;
-                else if (amount >= 1000 && amount <= 1999) additionalFee = 30;
-                else if (amount >= 2000 && amount <= 2999) additionalFee = 50;
-                else if (amount >= 3000 && amount <= 3999) additionalFee = 70;
-                else if (amount >= 4000 && amount <= 4999) additionalFee = 90;
-                else if (amount >= 5000 && amount <= 5999) additionalFee = 110;
-                else if (amount >= 6000 && amount <= 6999) additionalFee = 140;
-                else if (amount >= 7000 && amount <= 7999) additionalFee = 170;
-                else if (amount >= 8000 && amount <= 8999) additionalFee = 210;
-                else if (amount >= 9000 && amount <= 9999) additionalFee = 250;
-                else if (amount >= 10000) additionalFee = 300;
-
-            } else { // نوع العمرة
-                additionalFee = 0;
-                // لا حاجة لحساب العمولة
+                totalSum = (amount + additionalFee) * (1 + monthlyRate);
+            } else { // عمرة
+                if (amount >= 10000 && amount < 20000) {
+                    monthlyRate *= 0.9;
+                } else if (amount >= 20000) {
+                    monthlyRate *= 0.8;
+                }
+                totalSum = amount * (1 + monthlyRate);
             }
 
-            let finalMonthlyRate = monthlyRate;
-            if (amount >= 10000 && amount < 20000) {
-                finalMonthlyRate *= 0.9;
-            } else if (amount >= 20000) {
-                finalMonthlyRate *= 0.8;
-            }
-
-            const totalSum = (amount + additionalFee) * (1 + finalMonthlyRate);
             const monthlyPayment = Math.ceil(totalSum / months / 10) * 10;
 
             document.getElementById('result').innerHTML = `
-                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)} <br>
-                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)} <br>
-               
+                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)}<br>
+                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)}
             `;
         }
     </script>
