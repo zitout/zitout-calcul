@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة القروض الذكية</title>
+    <title>حاسبة قروض السلع</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -36,7 +36,7 @@
             color: #34495e;
             font-weight: bold;
         }
-        input, select {
+        input {
             width: 100%;
             padding: 10px;
             border: 1px solid #bdc3c7;
@@ -44,7 +44,7 @@
             font-size: 1rem;
             transition: border-color 0.3s;
         }
-        input:focus, select:focus {
+        input:focus {
             outline: none;
             border-color: #3498db;
         }
@@ -75,30 +75,38 @@
             border-radius: 5px;
             margin-top: 1rem;
         }
+        .details {
+            margin-top: 1rem;
+            text-align: right;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h2>حاسبة القروض الذكية</h2>
-        <div class="input-group">
-            <label for="type">اختر النوع:</label>
-            <select id="type">
-                <option value="product">سلعة</option>
-                <option value="umrah">عمرة</option>
-            </select>
-        </div>
+        <h2>حاسبة قروض السلع</h2>
         <div class="input-group">
             <label for="months">عدد الأشهر:</label>
-            <input type="number" id="months" placeholder="أدخل عدد الأشهر" min="1" max="18">
+            <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
         </div>
         <div class="input-group">
-            <label for="amount">المبلغ :</label>
+            <label for="amount">مبلغ السلعة:</label>
             <input type="number" id="amount" placeholder="أدخل المبلغ" min="0">
         </div>
         <button onclick="calculate()">احسب القسط</button>
         <div class="result-box">
             <p id="result">النتيجة ستظهر هنا</p>
         </div>
+        <div class="details" id="details"></div>
     </div>
 
     <script>
@@ -127,51 +135,46 @@
             return 0;
         }
 
-        function calculateProductLoan(amount, months, monthlyRate) {
-            let additionalFee = calculateAdditionalFee(amount);
-            let totalSum = amount + additionalFee;
-            totalSum *= (1 + monthlyRate);
-            return totalSum;
-        }
-
-        function calculateUmrahLoan(amount, monthlyRate) {
-            let adjustedRate = monthlyRate;
-            if (amount >= 20000) {
-                adjustedRate *= 0.8;  // تخفيض 20%
-            } else if (amount >= 10000) {
-                adjustedRate *= 0.9;  // تخفيض 10%
-            }
-            return amount * (1 + adjustedRate);
-        }
-
         function roundUpToNearest10(number) {
             return Math.ceil(number / 10) * 10;
         }
 
+        function formatNumber(number) {
+            return number.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
         function calculate() {
-            const type = document.getElementById('type').value;
             const months = parseInt(document.getElementById('months').value);
             const amount = parseFloat(document.getElementById('amount').value);
             
+            // التحقق من صحة المدخلات
             if (!amount || !months || months < 1 || months > 18) {
                 document.getElementById('result').innerHTML = 'الرجاء إدخال قيم صحيحة';
+                document.getElementById('details').innerHTML = '';
                 return;
             }
 
             const monthlyRate = getMonthlyRate(months);
-            let totalSum = 0;
-
-            if (type === 'product') {
-                totalSum = calculateProductLoan(amount, months, monthlyRate);
-            } else {
-                totalSum = calculateUmrahLoan(amount, monthlyRate);
-            }
-
+            const additionalFee = calculateAdditionalFee(amount);
+            const baseAmount = amount + additionalFee;
+            const totalSum = baseAmount * (1 + monthlyRate);
             const monthlyPayment = roundUpToNearest10(totalSum / months);
 
             document.getElementById('result').innerHTML = `
-                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)} <br>
-                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)} 
+                <strong>القسط الشهري:</strong> ${formatNumber(monthlyPayment)} <br>
+                <strong>إجمالي المبلغ:</strong> ${formatNumber(totalSum)} 
+            `;
+
+            document.getElementById('details').innerHTML = `
+                <strong>تفاصيل الحساب:</strong><br>
+                المبلغ الأساسي: ${formatNumber(amount)} <br>
+                العمولة: ${formatNumber(additionalFee)} <br>
+                المبلغ بعد العمولة: ${formatNumber(baseAmount)} <br>
+                نسبة الربح: ${(monthlyRate * 100).toFixed(1)}%<br>
+                مبلغ الربح: ${formatNumber(totalSum - baseAmount)} 
             `;
         }
     </script>
