@@ -36,7 +36,7 @@
             color: #34495e;
             font-weight: bold;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 10px;
             border: 1px solid #bdc3c7;
@@ -44,7 +44,7 @@
             font-size: 1rem;
             transition: border-color 0.3s;
         }
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #3498db;
         }
@@ -81,11 +81,18 @@
     <div class="calculator">
         <h2>حاسبة القروض الذكية</h2>
         <div class="input-group">
+            <label for="type">اختر النوع:</label>
+            <select id="type">
+                <option value="product">سلعة</option>
+                <option value="umrah">عمرة</option>
+            </select>
+        </div>
+        <div class="input-group">
             <label for="months">عدد الأشهر:</label>
             <input type="number" id="months" placeholder="أدخل عدد الأشهر" min="1" max="18">
         </div>
         <div class="input-group">
-            <label for="amount">المبلغ (بالريال):</label>
+            <label for="amount">المبلغ :</label>
             <input type="number" id="amount" placeholder="أدخل المبلغ" min="0">
         </div>
         <button onclick="calculate()">احسب القسط</button>
@@ -96,50 +103,64 @@
 
     <script>
         function calculate() {
+            const type = document.getElementById('type').value;
             const months = parseInt(document.getElementById('months').value);
             const amount = parseFloat(document.getElementById('amount').value);
             let monthlyRate = 0;
             let additionalFee = 0;
 
-            // تحديد معدل الشهر
-            if (months >= 1 && months <= 2) monthlyRate = 0.17;
-            else if (months === 3) monthlyRate = 0.2;
-            else if (months === 4) monthlyRate = 0.22;
-            else if (months === 5) monthlyRate = 0.24;
-            else if (months === 6) monthlyRate = 0.27;
-            else if (months === 7) monthlyRate = 0.3;
-            else if (months === 8) monthlyRate = 0.34;
-            else if (months === 9) monthlyRate = 0.38;
-            else if (months === 10) monthlyRate = 0.42;
-            else if (months === 11) monthlyRate = 0.46;
-            else if (months === 12) monthlyRate = 0.5;
-            else if (months === 13) monthlyRate = 0.52;
-            else if (months === 14) monthlyRate = 0.57;
-            else if (months === 15) monthlyRate = 0.62;
-            else if (months === 16) monthlyRate = 0.67;
-            else if (months === 17) monthlyRate = 0.72;
-            else if (months === 18) monthlyRate = 0.77;
+            if (type === 'product') {
+                // حساب العمولة للسلع
+                if (months >= 1 && months <= 2) monthlyRate = 0.17;
+                else if (months === 3) monthlyRate = 0.2;
+                else if (months === 4) monthlyRate = 0.22;
+                else if (months === 5) monthlyRate = 0.24;
+                else if (months === 6) monthlyRate = 0.27;
+                else if (months === 7) monthlyRate = 0.3;
+                else if (months === 8) monthlyRate = 0.34;
+                else if (months === 9) monthlyRate = 0.38;
+                else if (months === 10) monthlyRate = 0.42;
+                else if (months === 11) monthlyRate = 0.46;
+                else if (months === 12) monthlyRate = 0.5;
+                else if (months === 13) monthlyRate = 0.52;
+                else if (months === 14) monthlyRate = 0.57;
+                else if (months === 15) monthlyRate = 0.62;
+                else if (months === 16) monthlyRate = 0.67;
+                else if (months === 17) monthlyRate = 0.72;
+                else if (months === 18) monthlyRate = 0.77;
 
-            // تحديد الرسوم الإضافية
-            if (amount >= 0 && amount <= 999) additionalFee = 20;
-            else if (amount >= 1000 && amount <= 1999) additionalFee = 30;
-            else if (amount >= 2000 && amount <= 2999) additionalFee = 50;
-            else if (amount >= 3000 && amount <= 3999) additionalFee = 70;
-            else if (amount >= 4000 && amount <= 4999) additionalFee = 90;
-            else if (amount >= 5000 && amount <= 5999) additionalFee = 110;
-            else if (amount >= 6000 && amount <= 6999) additionalFee = 140;
-            else if (amount >= 7000 && amount <= 7999) additionalFee = 170;
-            else if (amount >= 8000 && amount <= 8999) additionalFee = 210;
-            else if (amount >= 9000 && amount <= 9999) additionalFee = 250;
-            else if (amount >= 10000) additionalFee = 300;
+                // تحديد الرسوم الإضافية
+                if (amount >= 0 && amount <= 999) additionalFee = 20;
+                else if (amount >= 1000 && amount <= 1999) additionalFee = 30;
+                else if (amount >= 2000 && amount <= 2999) additionalFee = 50;
+                else if (amount >= 3000 && amount <= 3999) additionalFee = 70;
+                else if (amount >= 4000 && amount <= 4999) additionalFee = 90;
+                else if (amount >= 5000 && amount <= 5999) additionalFee = 110;
+                else if (amount >= 6000 && amount <= 6999) additionalFee = 140;
+                else if (amount >= 7000 && amount <= 7999) additionalFee = 170;
+                else if (amount >= 8000 && amount <= 8999) additionalFee = 210;
+                else if (amount >= 9000 && amount <= 9999) additionalFee = 250;
+                else if (amount >= 10000) additionalFee = 300;
 
-            const totalSum = (amount + additionalFee) * (1 + monthlyRate);
+            } else { // نوع العمرة
+                additionalFee = 0;
+                // لا حاجة لحساب العمولة
+            }
+
+            let finalMonthlyRate = monthlyRate;
+            if (amount >= 10000 && amount < 20000) {
+                finalMonthlyRate *= 0.9;
+            } else if (amount >= 20000) {
+                finalMonthlyRate *= 0.8;
+            }
+
+            const totalSum = (amount + additionalFee) * (1 + finalMonthlyRate);
             const monthlyPayment = Math.ceil(totalSum / months / 10) * 10;
 
             document.getElementById('result').innerHTML = `
-                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)} ريال<br>
-                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)} ريال<br>
-                <strong>الرسوم الإضافية:</strong> ${additionalFee} 
+                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)} <br>
+                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)} <br>
+               
             `;
         }
     </script>
