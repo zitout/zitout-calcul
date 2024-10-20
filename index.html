@@ -102,99 +102,14 @@
     </div>
 
     <script>
-        function calculate() {
-            const type = document.getElementById('type').value;
-            const months = parseInt(document.getElementById('months').value);
-            const amount = parseFloat(document.getElementById('amount').value);
-            let monthlyRate = 0;
-            let additionalFee = 0;
-            let totalSum = 0;
-
-            // تحديد النسبة الشهرية بناءً على عدد الأشهر
-            switch(months) {
-                case 1:
-                case 2:
-                    monthlyRate = 0.17;
-                    break;
-                case 3:
-                    monthlyRate = 0.2;
-                    break;
-                case 4:
-                    monthlyRate = 0.22;
-                    break;
-                case 5:
-                    monthlyRate = 0.24;
-                    break;
-                case 6:
-                    monthlyRate = 0.27;
-                    break;
-                case 7:
-                    monthlyRate = 0.3;
-                    break;
-                case 8:
-                    monthlyRate = 0.34;
-                    break;
-                case 9:
-                    monthlyRate = 0.38;
-                    break;
-                case 10:
-                    monthlyRate = 0.42;
-                    break;
-                case 11:
-                    monthlyRate = 0.46;
-                    break;
-                case 12:
-                    monthlyRate = 0.5;
-                    break;
-                case 13:
-                    monthlyRate = 0.52;
-                    break;
-                case 14:
-                    monthlyRate = 0.57;
-                    break;
-                case 15:
-                    monthlyRate = 0.62;
-                    break;
-                case 16:
-                    monthlyRate = 0.67;
-                    break;
-                case 17:
-                    monthlyRate = 0.72;
-                    break;
-                case 18:
-                    monthlyRate = 0.77;
-                    break;
-                default:
-                    monthlyRate = 0;
-            }
-
-            if (type === 'product') {
-                // حساب الرسوم الإضافية للسلع
-                additionalFee = calculateAdditionalFee(amount);
-                
-                // إضافة الرسوم الإضافية للمبلغ الأصلي
-                totalSum = amount + additionalFee;
-                
-                // تطبيق النسبة الشهرية
-                totalSum *= (1 + monthlyRate);
-            } else { // عمرة
-                totalSum = amount * (1 + monthlyRate);
-            }
-
-            // تطبيق الخصومات على المبلغ النهائي بناءً على المبلغ الأصلي
-            if (amount >= 10000 && amount < 20000) {
-                totalSum *= 0.9;
-            } else if (amount >= 20000) {
-                totalSum *= 0.8;
-            }
-
-            // تقريب القسط الشهري لأقرب 10 للأعلى
-            const monthlyPayment = Math.ceil(totalSum / months / 10) * 10;
-
-            document.getElementById('result').innerHTML = `
-                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)}<br>
-                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)}
-            `;
+        function getMonthlyRate(months) {
+            const rates = {
+                1: 0.17, 2: 0.17, 3: 0.2, 4: 0.22, 5: 0.24,
+                6: 0.27, 7: 0.3, 8: 0.34, 9: 0.38, 10: 0.42,
+                11: 0.46, 12: 0.5, 13: 0.52, 14: 0.57, 15: 0.62,
+                16: 0.67, 17: 0.72, 18: 0.77
+            };
+            return rates[months] || 0;
         }
 
         function calculateAdditionalFee(amount) {
@@ -210,6 +125,54 @@
             if (amount >= 9000 && amount <= 9999) return 250;
             if (amount >= 10000) return 300;
             return 0;
+        }
+
+        function calculateProductLoan(amount, months, monthlyRate) {
+            let additionalFee = calculateAdditionalFee(amount);
+            let totalSum = amount + additionalFee;
+            totalSum *= (1 + monthlyRate);
+            return totalSum;
+        }
+
+        function calculateUmrahLoan(amount, monthlyRate) {
+            let adjustedRate = monthlyRate;
+            if (amount >= 20000) {
+                adjustedRate *= 0.8;  // تخفيض 20%
+            } else if (amount >= 10000) {
+                adjustedRate *= 0.9;  // تخفيض 10%
+            }
+            return amount * (1 + adjustedRate);
+        }
+
+        function roundUpToNearest10(number) {
+            return Math.ceil(number / 10) * 10;
+        }
+
+        function calculate() {
+            const type = document.getElementById('type').value;
+            const months = parseInt(document.getElementById('months').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+            
+            if (!amount || !months || months < 1 || months > 18) {
+                document.getElementById('result').innerHTML = 'الرجاء إدخال قيم صحيحة';
+                return;
+            }
+
+            const monthlyRate = getMonthlyRate(months);
+            let totalSum = 0;
+
+            if (type === 'product') {
+                totalSum = calculateProductLoan(amount, months, monthlyRate);
+            } else {
+                totalSum = calculateUmrahLoan(amount, monthlyRate);
+            }
+
+            const monthlyPayment = roundUpToNearest10(totalSum / months);
+
+            document.getElementById('result').innerHTML = `
+                <strong>القسط الشهري:</strong> ${monthlyPayment.toFixed(2)} <br>
+                <strong>إجمالي المبلغ:</strong> ${totalSum.toFixed(2)} 
+            `;
         }
     </script>
 </body>
