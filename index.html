@@ -208,17 +208,23 @@
                 }
             }
 
-            // تطبيق الخصومات على النسبة الشهرية بناءً على المبلغ
-            if (amount >= 10000 && amount < 20000) {
-                monthlyRate *= 0.9;
-            } else if (amount >= 20000) {
-                monthlyRate *= 0.8;
+            // إزالة تطبيق الخصومات على معدل الفائدة الشهري للنوع "سلعة"
+            /*
+            if (type !== 'product') {
+                if (amount >= 10000 && amount < 20000) {
+                    monthlyRate *= 0.9;
+                } else if (amount >= 20000) {
+                    monthlyRate *= 0.8;
+                }
             }
+            */
 
+            // حساب المجموع النهائي والقسط الشهري
             let totalSum;
             if (type === 'product') {
                 totalSum = (amount + additionalFee) * (1 + monthlyRate);
             } else { // عمرة
+                // إذا كنت ترغب في تطبيق خصومات على أنواع أخرى مثل "عمرة"، يمكنك إضافة ذلك هنا
                 totalSum = amount * (1 + monthlyRate);
             }
 
