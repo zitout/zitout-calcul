@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة القروض</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .calculator {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>حاسبة القروض</h2>
+        <input type="number" id="months" placeholder="عدد الأشهر">
+        <input type="number" id="amount" placeholder="المبلغ">
+        <button onclick="calculate()">احسب القسط</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function calculate() {
+            const months = parseInt(document.getElementById('months').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+            let monthlyRate = 0;
+            let additionalFee = 0;
+
+            // تحديد معدل الشهر
+            if (months >= 1 && months <= 2) monthlyRate = 0.17;
+            else if (months === 3) monthlyRate = 0.2;
+            else if (months === 4) monthlyRate = 0.22;
+            else if (months === 5) monthlyRate = 0.24;
+            else if (months === 6) monthlyRate = 0.27;
+            else if (months === 7) monthlyRate = 0.3;
+            else if (months === 8) monthlyRate = 0.34;
+            else if (months === 9) monthlyRate = 0.38;
+            else if (months === 10) monthlyRate = 0.42;
+            else if (months === 11) monthlyRate = 0.46;
+            else if (months === 12) monthlyRate = 0.5;
+            else if (months === 13) monthlyRate = 0.52;
+            else if (months === 14) monthlyRate = 0.57;
+            else if (months === 15) monthlyRate = 0.62;
+            else if (months === 16) monthlyRate = 0.67;
+            else if (months === 17) monthlyRate = 0.72;
+            else if (months === 18) monthlyRate = 0.77;
+
+            // تحديد الرسوم الإضافية
+            if (amount >= 0 && amount <= 999) additionalFee = 20;
+            else if (amount >= 1000 && amount <= 1999) additionalFee = 30;
+            else if (amount >= 2000 && amount <= 2999) additionalFee = 50;
+            else if (amount >= 3000 && amount <= 3999) additionalFee = 70;
+            else if (amount >= 4000 && amount <= 4999) additionalFee = 90;
+            else if (amount >= 5000 && amount <= 5999) additionalFee = 110;
+            else if (amount >= 6000 && amount <= 6999) additionalFee = 140;
+            else if (amount >= 7000 && amount <= 7999) additionalFee = 170;
+            else if (amount >= 8000 && amount <= 8999) additionalFee = 210;
+            else if (amount >= 9000 && amount <= 9999) additionalFee = 250;
+            else if (amount >= 10000) additionalFee = 300;
+
+            const totalSum = (amount + additionalFee) * (1 + monthlyRate);
+            const monthlyPayment = Math.ceil(totalSum / months / 10) * 10;
+
+            document.getElementById('result').textContent = `القسط الشهري: ${monthlyPayment.toFixed(2)} ريال`;
+        }
+    </script>
+</body>
+</html>
