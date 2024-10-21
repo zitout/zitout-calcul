@@ -16,14 +16,14 @@
             align-items: center;
             overflow: hidden;
         }
-        .calculator-container {
+        .main-container {
             background-color: white;
             padding: 2rem;
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             width: 90%;
-            max-width: 500px;
-            height: 90%;
+            max-width: 800px;
+            height: 90vh;
             display: flex;
             flex-direction: column;
         }
@@ -32,14 +32,19 @@
             margin-bottom: 1.5rem;
             text-align: center;
         }
-        .input-section {
-            flex: 1;
+        .calculator-section {
+            flex: 2; /* ثلثي الشاشة */
             overflow-y: auto;
             margin-bottom: 1rem;
             padding-right: 10px;
         }
-        .input-group {
-            margin-bottom: 1rem;
+        .result-section {
+            flex: 1; /* ثلث الشاشة */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .input-group, .result-box, .details {
             text-align: right;
         }
         label {
@@ -70,15 +75,12 @@
             font-size: 1rem;
             transition: background-color 0.3s;
             width: 100%;
-            position: sticky;
-            bottom: 0;
-            left: 0;
+            margin-top: 1rem;
         }
         .calculate-button:hover {
             background-color: #2980b9;
         }
         #result {
-            margin-top: 1.5rem;
             font-size: 1.2rem;
             font-weight: bold;
             color: #2c3e50;
@@ -88,18 +90,15 @@
             background-color: #ecf0f1;
             padding: 1rem;
             border-radius: 5px;
-            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
         .details {
-            margin-top: 1rem;
-            text-align: right;
             font-size: 0.9rem;
             color: #7f8c8d;
             word-wrap: break-word;
         }
         .item-input {
             margin-bottom: 1rem;
-            text-align: right;
         }
         .item-input label {
             margin-bottom: 0.3rem;
@@ -112,7 +111,7 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
-        /* تحسين تصميم النافذة المنبثقة */
+        /* تصميم النافذة المنبثقة */
         .modal {
             display: none;
             position: fixed;
@@ -147,17 +146,17 @@
             text-decoration: none;
         }
         @media (max-width: 600px) {
-            .calculator-container {
+            .main-container {
                 width: 95%;
-                height: 95%;
+                height: 95vh;
             }
         }
     </style>
 </head>
 <body>
-    <div class="calculator-container">
+    <div class="main-container">
         <h2>حاسبة قروض السلع</h2>
-        <div class="input-section">
+        <div class="calculator-section">
             <div class="input-group">
                 <label for="itemCount">عدد السلع:</label>
                 <select id="itemCount" onchange="showItemInputs()">
@@ -174,12 +173,14 @@
                 <label for="months">عدد الأشهر:</label>
                 <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
             </div>
+            <button class="calculate-button" onclick="calculate()">احسب القسط</button>
         </div>
-        <button class="calculate-button" onclick="calculate()">احسب القسط</button>
-        <div class="result-box">
-            <p id="result">النتيجة ستظهر هنا</p>
+        <div class="result-section">
+            <div class="result-box">
+                <p id="result">النتيجة ستظهر هنا</p>
+            </div>
+            <div class="details" id="details"></div>
         </div>
-        <div class="details" id="details"></div>
     </div>
 
     <!-- نافذة منبثقة للتأكيد أو تعليمات إضافية -->
@@ -235,11 +236,11 @@
         }
 
         function formatNumber(number) {
-    return number.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-}
+            return number.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
 
         function calculate() {
             const months = parseInt(document.getElementById('months').value);
