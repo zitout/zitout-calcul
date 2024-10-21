@@ -20,7 +20,7 @@
             padding: 2rem;
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            width: 350px;
+            width: 400px;
             text-align: center;
         }
         h2 {
@@ -29,6 +29,7 @@
         }
         .input-group {
             margin-bottom: 1rem;
+            text-align: right;
         }
         label {
             display: block;
@@ -36,7 +37,7 @@
             color: #34495e;
             font-weight: bold;
         }
-        input {
+        input, select {
             width: 100%;
             padding: 10px;
             border: 1px solid #bdc3c7;
@@ -44,7 +45,7 @@
             font-size: 1rem;
             transition: border-color 0.3s;
         }
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #3498db;
         }
@@ -81,6 +82,13 @@
             font-size: 0.9rem;
             color: #7f8c8d;
         }
+        .item-input {
+            margin-bottom: 1rem;
+            text-align: right;
+        }
+        .item-input label {
+            margin-bottom: 0.3rem;
+        }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -95,12 +103,20 @@
     <div class="calculator">
         <h2>حاسبة قروض السلع</h2>
         <div class="input-group">
+            <label for="itemCount">عدد السلع:</label>
+            <select id="itemCount" onchange="showItemInputs()">
+                <option value="">اختر عدد السلع</option>
+                <script>
+                    for(let i = 1; i <= 20; i++) {
+                        document.write(`<option value="${i}">${i}</option>`);
+                    }
+                </script>
+            </select>
+        </div>
+        <div id="itemInputs"></div>
+        <div class="input-group">
             <label for="months">عدد الأشهر:</label>
             <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
-        </div>
-        <div class="input-group">
-            <label for="amount">مبلغ السلعة:</label>
-            <input type="number" id="amount" placeholder="أدخل المبلغ" min="0">
         </div>
         <button onclick="calculate()">احسب القسط</button>
         <div class="result-box">
@@ -110,6 +126,20 @@
     </div>
 
     <script>
+        function showItemInputs() {
+            const count = parseInt(document.getElementById('itemCount').value);
+            let inputs = '';
+            for (let i = 1; i <= count; i++) {
+                inputs += `
+                    <div class="item-input">
+                        <label for="item${i}">ثمن السلعة ${i}:</label>
+                        <input type="number" id="item${i}" placeholder="أدخل المبلغ" min="0">
+                    </div>
+                `;
+            }
+            document.getElementById('itemInputs').innerHTML = inputs;
+        }
+
         function getMonthlyRate(months) {
             const rates = {
                 1: 0.17, 2: 0.17, 3: 0.2, 4: 0.22, 5: 0.24,
@@ -148,18 +178,33 @@
 
         function calculate() {
             const months = parseInt(document.getElementById('months').value);
-            const amount = parseFloat(document.getElementById('amount').value);
+            const itemCount = parseInt(document.getElementById('itemCount').value);
             
-            // التحقق من صحة المدخلات
-            if (!amount || !months || months < 1 || months > 18) {
+            if (!months || months < 1 || months > 18 || !itemCount) {
                 document.getElementById('result').innerHTML = 'الرجاء إدخال قيم صحيحة';
                 document.getElementById('details').innerHTML = '';
                 return;
             }
 
+            let totalAmount = 0;
+            let totalAdditionalFee = 0;
+            let itemDetails = '';
+
+            for (let i = 1; i <= itemCount; i++) {
+                const itemAmount = parseFloat(document.getElementById(`item${i}`).value);
+                if (isNaN(itemAmount) || itemAmount < 0) {
+                    document.getElementById('result').innerHTML = `الرجاء إدخال قيمة صحيحة للسلعة ${i}`;
+                    document.getElementById('details').innerHTML = '';
+                    return;
+                }
+                const itemFee = calculateAdditionalFee(itemAmount);
+                totalAmount += itemAmount;
+                totalAdditionalFee += itemFee;
+                itemDetails += `السلعة ${i}: ${formatNumber(itemAmount)} + عمولة ${formatNumber(itemFee)} = ${formatNumber(itemAmount + itemFee)}<br>`;
+            }
+
             const monthlyRate = getMonthlyRate(months);
-            const additionalFee = calculateAdditionalFee(amount);
-            const baseAmount = amount + additionalFee;
+            const baseAmount = totalAmount + totalAdditionalFee;
             const totalSum = baseAmount * (1 + monthlyRate);
             const monthlyPayment = roundUpToNearest10(totalSum / months);
 
@@ -170,8 +215,9 @@
 
             document.getElementById('details').innerHTML = `
                 <strong>تفاصيل الحساب:</strong><br>
-                المبلغ الأساسي: ${formatNumber(amount)} <br>
-                العمولة: ${formatNumber(additionalFee)} <br>
+                ${itemDetails}
+                المبلغ الأساسي الكلي: ${formatNumber(totalAmount)} <br>
+                إجمالي العمولة: ${formatNumber(totalAdditionalFee)} <br>
                 المبلغ بعد العمولة: ${formatNumber(baseAmount)} <br>
                 نسبة الربح: ${(monthlyRate * 100).toFixed(1)}%<br>
                 مبلغ الربح: ${formatNumber(totalSum - baseAmount)} 
