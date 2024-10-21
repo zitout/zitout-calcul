@@ -14,18 +14,29 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
         }
-        .calculator {
+        .calculator-container {
             background-color: white;
             padding: 2rem;
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            width: 400px;
-            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
         }
         h2 {
             color: #2c3e50;
             margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .input-section {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding-right: 10px;
         }
         .input-group {
             margin-bottom: 1rem;
@@ -49,7 +60,7 @@
             outline: none;
             border-color: #3498db;
         }
-        button {
+        .calculate-button {
             background-color: #3498db;
             color: white;
             border: none;
@@ -59,9 +70,11 @@
             font-size: 1rem;
             transition: background-color 0.3s;
             width: 100%;
-            margin-top: 1rem;
+            position: sticky;
+            bottom: 0;
+            left: 0;
         }
-        button:hover {
+        .calculate-button:hover {
             background-color: #2980b9;
         }
         #result {
@@ -69,6 +82,7 @@
             font-size: 1.2rem;
             font-weight: bold;
             color: #2c3e50;
+            word-wrap: break-word;
         }
         .result-box {
             background-color: #ecf0f1;
@@ -81,6 +95,7 @@
             text-align: right;
             font-size: 0.9rem;
             color: #7f8c8d;
+            word-wrap: break-word;
         }
         .item-input {
             margin-bottom: 1rem;
@@ -97,32 +112,82 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        /* تحسين تصميم النافذة المنبثقة */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .calculator-container {
+                width: 95%;
+                height: 95%;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="calculator">
+    <div class="calculator-container">
         <h2>حاسبة قروض السلع</h2>
-        <div class="input-group">
-            <label for="itemCount">عدد السلع:</label>
-            <select id="itemCount" onchange="showItemInputs()">
-                <option value="">اختر عدد السلع</option>
-                <script>
-                    for(let i = 1; i <= 20; i++) {
-                        document.write(`<option value="${i}">${i}</option>`);
-                    }
-                </script>
-            </select>
+        <div class="input-section">
+            <div class="input-group">
+                <label for="itemCount">عدد السلع:</label>
+                <select id="itemCount" onchange="showItemInputs()">
+                    <option value="">اختر عدد السلع</option>
+                    <script>
+                        for(let i = 1; i <= 20; i++) {
+                            document.write(`<option value="${i}">${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+            <div id="itemInputs"></div>
+            <div class="input-group">
+                <label for="months">عدد الأشهر:</label>
+                <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
+            </div>
         </div>
-        <div id="itemInputs"></div>
-        <div class="input-group">
-            <label for="months">عدد الأشهر:</label>
-            <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
-        </div>
-        <button onclick="calculate()">احسب القسط</button>
+        <button class="calculate-button" onclick="calculate()">احسب القسط</button>
         <div class="result-box">
             <p id="result">النتيجة ستظهر هنا</p>
         </div>
         <div class="details" id="details"></div>
+    </div>
+
+    <!-- نافذة منبثقة للتأكيد أو تعليمات إضافية -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p>تم حساب القسط بنجاح!</p>
+        </div>
     </div>
 
     <script>
@@ -170,7 +235,7 @@
         }
 
         function formatNumber(number) {
-            return number.toLocaleString('en-US', {
+            return number.toLocaleString('ar-SA', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
@@ -222,6 +287,28 @@
                 نسبة الربح: ${(monthlyRate * 100).toFixed(1)}%<br>
                 مبلغ الربح: ${formatNumber(totalSum - baseAmount)} 
             `;
+
+            // عرض النافذة المنبثقة بعد الحساب بنجاح
+            showModal();
+        }
+
+        // وظائف لإدارة النافذة المنبثقة
+        function showModal() {
+            const modal = document.getElementById('myModal');
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('myModal');
+            modal.style.display = 'none';
+        }
+
+        // إغلاق النافذة عند النقر خارج محتواها
+        window.onclick = function(event) {
+            const modal = document.getElementById('myModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
         }
     </script>
 </body>
