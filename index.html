@@ -156,6 +156,14 @@
 <body>
     <div class="main-container">
         <h2>حاسبة قروض السلع</h2>
+        <!-- في قسم الـ HTML قبل حقل عدد السلع -->
+<div class="input-group">
+    <label for="jobType">نوع المهنة:</label>
+    <select id="jobType" onchange="updateMaxMonths()">
+        <option value="other">مهنة أخرى</option>
+        <option value="unemployment">بطالة</option>
+    </select>
+</div>
         <div class="calculator-section">
             <div class="input-group">
                 <label for="itemCount">عدد السلع:</label>
@@ -169,10 +177,12 @@
                 </select>
             </div>
             <div id="itemInputs"></div>
-            <div class="input-group">
-                <label for="months">عدد الأشهر:</label>
-                <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
-            </div>
+           <!-- تحديث حقل عدد الأشهر -->
+<div class="input-group">
+    <label for="months">عدد الأشهر:</label>
+    <input type="number" id="months" placeholder="أدخل عدد الأشهر (1-18)" min="1" max="18">
+</div>
+
             <button class="calculate-button" onclick="calculate()">احسب القسط</button>
         </div>
         <div class="result-section">
@@ -191,126 +201,164 @@
         </div>
     </div>
 
-    <script>
-        function showItemInputs() {
-            const count = parseInt(document.getElementById('itemCount').value);
-            let inputs = '';
-            for (let i = 1; i <= count; i++) {
-                inputs += `
-                    <div class="item-input">
-                        <label for="item${i}">ثمن السلعة ${i}:</label>
-                        <input type="number" id="item${i}" placeholder="أدخل المبلغ" min="0">
-                    </div>
-                `;
-            }
-            document.getElementById('itemInputs').innerHTML = inputs;
+   <script>
+    // دالة إنشاء حقول إدخال السلع
+    function showItemInputs() {
+        const count = parseInt(document.getElementById('itemCount').value);
+        let inputs = '';
+        for (let i = 1; i <= count; i++) {
+            inputs += `
+                <div class="item-input">
+                    <label for="item${i}">ثمن السلعة ${i}:</label>
+                    <input type="number" id="item${i}" placeholder="أدخل المبلغ" min="0">
+                </div>
+            `;
+        }
+        document.getElementById('itemInputs').innerHTML = inputs;
+    }
+
+    // دالة تحديث الحد الأقصى للأشهر حسب نوع المهنة
+    function updateMaxMonths() {
+        const jobType = document.getElementById('jobType').value;
+        const monthsInput = document.getElementById('months');
+        
+        if(jobType === 'unemployment') {
+            monthsInput.max = 6;
+            monthsInput.placeholder = "أدخل عدد الأشهر (1-6)";
+        } else {
+            monthsInput.max = 18;
+            monthsInput.placeholder = "أدخل عدد الأشهر (1-18)";
+        }
+    }
+
+    // دالة حساب النسبة الشهرية حسب نوع المهنة
+    function getMonthlyRate(months, jobType) {
+        if(jobType === 'unemployment') {
+            return 0.4; // 40% ثابتة للبطالة
+        }
+        
+        // النسب الأصلية للمهن الأخرى
+        const rates = {
+            1: 0.17, 2: 0.17, 3: 0.2, 4: 0.22, 5: 0.24,
+            6: 0.27, 7: 0.3, 8: 0.34, 9: 0.38, 10: 0.42,
+            11: 0.46, 12: 0.5, 13: 0.52, 14: 0.57, 15: 0.62,
+            16: 0.67, 17: 0.72, 18: 0.77
+        };
+        return rates[months] || 0;
+    }
+
+    // دالة حساب العمولة الإضافية
+    function calculateAdditionalFee(amount) {
+        if (amount >= 0 && amount <= 999) return 20;
+        if (amount >= 1000 && amount <= 1999) return 30;
+        if (amount >= 2000 && amount <= 2999) return 50;
+        if (amount >= 3000 && amount <= 3999) return 70;
+        if (amount >= 4000 && amount <= 4999) return 90;
+        if (amount >= 5000 && amount <= 5999) return 110;
+        if (amount >= 6000 && amount <= 6999) return 140;
+        if (amount >= 7000 && amount <= 7999) return 170;
+        if (amount >= 8000 && amount <= 8999) return 210;
+        if (amount >= 9000 && amount <= 9999) return 250;
+        if (amount >= 10000) return 300;
+        return 0;
+    }
+
+    // دالة التقريب لأقرب عشرة
+    function roundUpToNearest10(number) {
+        return Math.ceil(number / 10) * 10;
+    }
+
+    // دالة تنسيق الأرقام
+    function formatNumber(number) {
+        return number.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // الدالة الرئيسية للحساب
+    function calculate() {
+        const jobType = document.getElementById('jobType').value;
+        const months = parseInt(document.getElementById('months').value);
+        const itemCount = parseInt(document.getElementById('itemCount').value);
+        
+        // التحقق من صحة المدخلات
+        if (!months || months < 1 || months > (jobType === 'unemployment' ? 6 : 18) || !itemCount) {
+            document.getElementById('result').innerHTML = 'الرجاء إدخال قيم صحيحة';
+            document.getElementById('details').innerHTML = '';
+            return;
         }
 
-        function getMonthlyRate(months) {
-            const rates = {
-                1: 0.17, 2: 0.17, 3: 0.2, 4: 0.22, 5: 0.24,
-                6: 0.27, 7: 0.3, 8: 0.34, 9: 0.38, 10: 0.42,
-                11: 0.46, 12: 0.5, 13: 0.52, 14: 0.57, 15: 0.62,
-                16: 0.67, 17: 0.72, 18: 0.77
-            };
-            return rates[months] || 0;
-        }
+        let totalAmount = 0;
+        let totalAdditionalFee = 0;
+        let itemDetails = '';
 
-        function calculateAdditionalFee(amount) {
-            if (amount >= 0 && amount <= 999) return 20;
-            if (amount >= 1000 && amount <= 1999) return 30;
-            if (amount >= 2000 && amount <= 2999) return 50;
-            if (amount >= 3000 && amount <= 3999) return 70;
-            if (amount >= 4000 && amount <= 4999) return 90;
-            if (amount >= 5000 && amount <= 5999) return 110;
-            if (amount >= 6000 && amount <= 6999) return 140;
-            if (amount >= 7000 && amount <= 7999) return 170;
-            if (amount >= 8000 && amount <= 8999) return 210;
-            if (amount >= 9000 && amount <= 9999) return 250;
-            if (amount >= 10000) return 300;
-            return 0;
-        }
-
-        function roundUpToNearest10(number) {
-            return Math.ceil(number / 10) * 10;
-        }
-
-        function formatNumber(number) {
-            return number.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-
-        function calculate() {
-            const months = parseInt(document.getElementById('months').value);
-            const itemCount = parseInt(document.getElementById('itemCount').value);
-            
-            if (!months || months < 1 || months > 18 || !itemCount) {
-                document.getElementById('result').innerHTML = 'الرجاء إدخال قيم صحيحة';
+        // حساب مبالغ السلع والعمولات
+        for (let i = 1; i <= itemCount; i++) {
+            const itemElement = document.getElementById(`item${i}`);
+            if (!itemElement) {
+                document.getElementById('result').innerHTML = `الرجاء إدخال قيمة للسلعة ${i}`;
                 document.getElementById('details').innerHTML = '';
                 return;
             }
-
-            let totalAmount = 0;
-            let totalAdditionalFee = 0;
-            let itemDetails = '';
-
-            for (let i = 1; i <= itemCount; i++) {
-                const itemAmount = parseFloat(document.getElementById(`item${i}`).value);
-                if (isNaN(itemAmount) || itemAmount < 0) {
-                    document.getElementById('result').innerHTML = `الرجاء إدخال قيمة صحيحة للسلعة ${i}`;
-                    document.getElementById('details').innerHTML = '';
-                    return;
-                }
-                const itemFee = calculateAdditionalFee(itemAmount);
-                totalAmount += itemAmount;
-                totalAdditionalFee += itemFee;
-                itemDetails += `السلعة ${i}: ${formatNumber(itemAmount)} + عمولة ${formatNumber(itemFee)} = ${formatNumber(itemAmount + itemFee)}<br>`;
+            
+            const itemAmount = parseFloat(itemElement.value);
+            if (isNaN(itemAmount) || itemAmount < 0) {
+                document.getElementById('result').innerHTML = `الرجاء إدخال قيمة صحيحة للسلعة ${i}`;
+                document.getElementById('details').innerHTML = '';
+                return;
             }
-
-            const monthlyRate = getMonthlyRate(months);
-            const baseAmount = totalAmount + totalAdditionalFee;
-            const totalSum = baseAmount * (1 + monthlyRate);
-            const monthlyPayment = roundUpToNearest10(totalSum / months);
-
-            document.getElementById('result').innerHTML = `
-                <strong>القسط الشهري:</strong> ${formatNumber(monthlyPayment)} <br>
-                <strong>إجمالي المبلغ:</strong> ${formatNumber(totalSum)} 
-            `;
-
-            document.getElementById('details').innerHTML = `
-                <strong>تفاصيل الحساب:</strong><br>
-                ${itemDetails}
-                المبلغ الأساسي الكلي: ${formatNumber(totalAmount)} <br>
-                إجمالي العمولة: ${formatNumber(totalAdditionalFee)} <br>
-                المبلغ بعد العمولة: ${formatNumber(baseAmount)} <br>
-                نسبة الربح: ${(monthlyRate * 100).toFixed(1)}%<br>
-                مبلغ الربح: ${formatNumber(totalSum - baseAmount)} 
-            `;
-
-            // عرض النافذة المنبثقة بعد الحساب بنجاح
-            showModal();
+            
+            const itemFee = calculateAdditionalFee(itemAmount);
+            totalAmount += itemAmount;
+            totalAdditionalFee += itemFee;
+            itemDetails += `السلعة ${i}: ${formatNumber(itemAmount)} + عمولة ${formatNumber(itemFee)} = ${formatNumber(itemAmount + itemFee)}<br>`;
         }
 
-        // وظائف لإدارة النافذة المنبثقة
-        function showModal() {
-            const modal = document.getElementById('myModal');
-            modal.style.display = 'block';
-        }
+        // الحسابات النهائية
+        const monthlyRate = getMonthlyRate(months, jobType);
+        const baseAmount = totalAmount + totalAdditionalFee;
+        const totalSum = baseAmount * (1 + monthlyRate);
+        const monthlyPayment = roundUpToNearest10(totalSum / months);
 
-        function closeModal() {
-            const modal = document.getElementById('myModal');
+        // عرض النتائج
+        document.getElementById('result').innerHTML = `
+            <strong>القسط الشهري:</strong> ${formatNumber(monthlyPayment)} <br>
+            <strong>إجمالي المبلغ:</strong> ${formatNumber(totalSum)} 
+        `;
+
+        document.getElementById('details').innerHTML = `
+            <strong>تفاصيل الحساب:</strong><br>
+            ${itemDetails}
+            نوع المهنة: ${jobType === 'unemployment' ? 'بطالة' : 'مهنة أخرى'} <br>
+            المبلغ الأساسي الكلي: ${formatNumber(totalAmount)} <br>
+            إجمالي العمولة: ${formatNumber(totalAdditionalFee)} <br>
+            المبلغ بعد العمولة: ${formatNumber(baseAmount)} <br>
+            نسبة الربح: ${(monthlyRate * 100).toFixed(jobType === 'unemployment' ? 0 : 1)}%<br>
+            مبلغ الربح: ${formatNumber(totalSum - baseAmount)} 
+        `;
+
+        showModal();
+    }
+
+    // وظائف إدارة النافذة المنبثقة
+    function showModal() {
+        const modal = document.getElementById('myModal');
+        modal.style.display = 'block';
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('myModal');
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('myModal');
+        if (event.target == modal) {
             modal.style.display = 'none';
         }
+    }
+</script>
 
-        // إغلاق النافذة عند النقر خارج محتواها
-        window.onclick = function(event) {
-            const modal = document.getElementById('myModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        }
-    </script>
 </body>
 </html>
