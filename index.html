@@ -16,6 +16,31 @@
             align-items: center;
             overflow: hidden;
         }
+
+        .top-result {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.monthly-payment {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+}
+
+.monthly-payment.highlight {
+    color: #27ae60;
+    transform: scale(1.05);
+}
+
+        
         .main-container {
             background-color: white;
             padding: 2rem;
@@ -169,8 +194,14 @@ input:focus {
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <h2>حاسبة قروض السلع</h2>
+<div class="main-container">
+    <!-- إضافة قسم النتيجة في الأعلى -->
+    <div class="top-result">
+        <h3>القسط الشهري:</h3>
+        <div id="monthlyPayment" class="monthly-payment">0</div>
+    </div>
+
+    <h2>حاسبة قروض السلع</h2>
         
         <div class="input-group">
             <label for="jobType">نوع المهنة:</label>
@@ -305,41 +336,54 @@ input:focus {
         )?.fee || 0;
     }
 
-    function calculate() {
-        const jobType = document.getElementById('jobType').value;
-        let months = parseInt(document.getElementById('months').value);
-        const itemCount = parseInt(document.getElementById('itemCount').value);
-        
-        if(jobType === 'unemployment') months = 6;
-        
-        if(!months || !itemCount) {
-            showResult('الرجاء إكمال جميع الحقول المطلوبة');
+   function calculate() {
+    const jobType = document.getElementById('jobType').value;
+    let months = parseInt(document.getElementById('months').value);
+    const itemCount = parseInt(document.getElementById('itemCount').value);
+    
+    if(jobType === 'unemployment') months = 6;
+    
+    if(!months || !itemCount) {
+        showResult('الرجاء إكمال جميع الحقول المطلوبة');
+        const monthlyPaymentElement = document.getElementById('monthlyPayment');
+        monthlyPaymentElement.textContent = "0 ";
+        return;
+    }
+
+    let totalAmount = 0;
+    let totalFee = 0;
+    
+    for(let i=1; i<=itemCount; i++) {
+        const itemValue = parseFloat(document.getElementById(`item${i}`)?.value || 0);
+        if(isNaN(itemValue) || itemValue < 0) {
+            showResult(`الرجاء إدخال قيمة صالحة للسلعة ${i}`);
+            const monthlyPaymentElement = document.getElementById('monthlyPayment');
+            monthlyPaymentElement.textContent = "0 ";
             return;
         }
+        totalAmount += itemValue;
+        totalFee += calculateAdditionalFee(itemValue);
+    }
 
-        let totalAmount = 0;
-        let totalFee = 0;
-        
-        for(let i=1; i<=itemCount; i++) {
-            const itemValue = parseFloat(document.getElementById(`item${i}`)?.value || 0);
-            if(isNaN(itemValue) || itemValue < 0) {
-                showResult(`الرجاء إدخال قيمة صالحة للسلعة ${i}`);
-                return;
-            }
-            totalAmount += itemValue;
-            totalFee += calculateAdditionalFee(itemValue);
-        }
+    const monthlyRate = getMonthlyRate(months, jobType);
+    const total = (totalAmount + totalFee) * (1 + monthlyRate);
+    const monthlyPayment = Math.ceil(total / months / 10) * 10;
 
-        const monthlyRate = getMonthlyRate(months, jobType);
-        const total = (totalAmount + totalFee) * (1 + monthlyRate);
-        const monthlyPayment = Math.ceil(total / months / 10) * 10;
+    // تحديث النتيجة في الأعلى مع تأثير بصري
+    const monthlyPaymentElement = document.getElementById('monthlyPayment');
+    monthlyPaymentElement.textContent = monthlyPayment.toLocaleString() + " ";
+    
+    // إضافة تأثير التحديث
+    monthlyPaymentElement.classList.add('highlight');
+    setTimeout(() => {
+        monthlyPaymentElement.classList.remove('highlight');
+    }, 300);
 
+    // تحديث النتيجة في المكان الأصلي أيضاً
     const resultHTML = `
-        <strong>القسط الشهري:</strong> ${monthlyPayment.toLocaleString()}<br>
-        
+        <strong>القسط الشهري:</strong> ${monthlyPayment.toLocaleString()} 
     `;
-
-    showResult(resultHTML, true);
+    showResult(resultHTML);
 }
 
     function showResult(message, showModal = false) {
