@@ -151,6 +151,21 @@
                 height: 95vh;
             }
         }
+
+        .changed {
+    transition: all 0.3s;
+    background-color: #e8f0fe;
+}
+
+input:focus {
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.result-box {
+    transition: all 0.3s;
+}
+
+        
     </style>
 </head>
 <body>
@@ -159,7 +174,7 @@
         
         <div class="input-group">
             <label for="jobType">نوع المهنة:</label>
-            <select id="jobType" onchange="updateMonthsField()">
+            <select id="jobType" onchange="handleJobTypeChange()">
                 <option value="unemployment">بطالة</option>
                 <option value="other">مهنة أخرى</option>
             </select>
@@ -168,7 +183,7 @@
         <div class="calculator-section">
             <div class="input-group">
                 <label for="itemCount">عدد السلع:</label>
-                <select id="itemCount" onchange="showItemInputs()">
+                <select id="itemCount" onchange="handleItemCountChange()">
                     <option value="">اختر عدد السلع</option>
                     <script>
                         for(let i = 1; i <= 20; i++) {
@@ -182,10 +197,13 @@
 
             <div class="input-group" id="monthsSection">
                 <label for="months">عدد الأشهر:</label>
-                <input type="number" id="months" placeholder="اختر عدد الأشهر" disabled>
+                <input type="number" 
+                       id="months" 
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       placeholder="اختر عدد الأشهر" 
+                       disabled>
             </div>
-
-            <button class="calculate-button" onclick="calculate()">احسب القسط</button>
         </div>
 
         <div class="result-section">
@@ -195,32 +213,28 @@
         </div>
     </div>
 
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div id="modalResult"></div>
-        </div>
-    </div>
-
 <script>
-    function updateMonthsField() {
+    let debounceTimer;
+
+    function handleJobTypeChange() {
         const jobType = document.getElementById('jobType').value;
         const monthsInput = document.getElementById('months');
+        
+        monthsInput.value = '';
         
         if(jobType === 'unemployment') {
             monthsInput.value = 6;
             monthsInput.disabled = true;
             monthsInput.placeholder = "تلقائي (6 أشهر)";
         } else {
-            monthsInput.value = '';
             monthsInput.disabled = false;
             monthsInput.placeholder = "أدخل عدد الأشهر (1-18)";
-            monthsInput.min = 1;
-            monthsInput.max = 18;
+            monthsInput.focus();
         }
+        calculateAutomatically();
     }
 
-    function showItemInputs() {
+    function handleItemCountChange() {
         const count = parseInt(document.getElementById('itemCount').value);
         const container = document.getElementById('itemInputs');
         container.innerHTML = '';
@@ -230,15 +244,42 @@
             div.className = 'item-input';
             div.innerHTML = `
                 <label for="item${i}">ثمن السلعة ${i}:</label>
-                <input type="number" id="item${i}" placeholder="أدخل المبلغ" min="0">
+                <input type="number" 
+                       id="item${i}" 
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       placeholder="أدخل المبلغ" 
+                       min="0"
+                       oninput="handleItemInput(this)">
             `;
             container.appendChild(div);
         }
     }
 
+    function handleItemInput(input) {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        calculateAutomatically();
+    }
+
+    function calculateAutomatically() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            calculate();
+        }, 300);
+    }
+
+    // إضافة مستمعي الأحداث عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('input', calculateAutomatically);
+            input.addEventListener('change', calculateAutomatically);
+        });
+    });
+
+    // تحديث باقي الدوال الموجودة مع الحفاظ على نفس المنطق
     function getMonthlyRate(months, jobType) {
         if(jobType === 'unemployment') return 0.4;
-        
         const rates = {
             1:0.17, 2:0.17, 3:0.2, 4:0.22, 5:0.24,
             6:0.27, 7:0.3, 8:0.34, 9:0.38, 10:0.42,
