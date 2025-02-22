@@ -360,8 +360,13 @@ input:focus {
         }
     }
 
-    // تهيئة أولية
-    updateMonthsField();
+       function showResult(message) {
+        document.getElementById('result').innerHTML = message;
+    }
+
+    // التهيئة الأولية
+    handleJobTypeChange();
 </script>
 </body>
+
 </html>
