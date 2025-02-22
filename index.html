@@ -200,7 +200,8 @@ input:focus {
                 <input type="number" 
                        id="months" 
                        inputmode="numeric"
-                       pattern="[0-9]*"
+                       onfocus="this.value=''"
+                       oninput="calculate()"
                        placeholder="اختر عدد الأشهر" 
                        disabled>
             </div>
@@ -213,25 +214,24 @@ input:focus {
         </div>
     </div>
 
+
 <script>
     let debounceTimer;
 
-    function handleJobTypeChange() {
+        function handleJobTypeChange() {
         const jobType = document.getElementById('jobType').value;
         const monthsInput = document.getElementById('months');
-        
-        monthsInput.value = '';
         
         if(jobType === 'unemployment') {
             monthsInput.value = 6;
             monthsInput.disabled = true;
             monthsInput.placeholder = "تلقائي (6 أشهر)";
         } else {
+            monthsInput.value = '';
             monthsInput.disabled = false;
             monthsInput.placeholder = "أدخل عدد الأشهر (1-18)";
-            monthsInput.focus();
         }
-        calculateAutomatically();
+        calculate();
     }
 
     function handleItemCountChange() {
@@ -247,14 +247,15 @@ input:focus {
                 <input type="number" 
                        id="item${i}" 
                        inputmode="numeric"
-                       pattern="[0-9]*"
+                       onfocus="this.value=''"
+                       oninput="calculate()"
                        placeholder="أدخل المبلغ" 
-                       min="0"
-                       oninput="handleItemInput(this)">
+                       min="0">
             `;
             container.appendChild(div);
         }
     }
+
 
     function handleItemInput(input) {
         input.value = input.value.replace(/[^0-9]/g, '');
